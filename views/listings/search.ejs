@@ -1,0 +1,159 @@
+<% layout("/layouts/boilerplate") %>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        .dropdown {
+            position: absolute;
+            z-index: 10;
+            width: 100%;
+            background-color: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.375rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            max-height: 15rem;
+            overflow-y: auto;
+            display: none;
+        }
+        .dropdown.show {
+            display: block;
+        }
+        .dropdown-item {
+            padding: 0.75rem 1rem;
+            cursor: pointer;
+        }
+        .dropdown-item:hover {
+            background-color: #f7fafc;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div class="container mx-auto px-4 py-8">
+        <h1 class="text-3xl font-bold text-center mb-8">Find Your Destination</h1>
+        
+        <div class="max-w-2xl mx-auto mb-10 relative">
+            <div class="relative">
+                <input
+                    type="text"
+                    id="citySearch"
+                    placeholder="Search by city..."
+                    class="w-full p-4 pl-12 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 absolute left-4 top-4 text-gray-500" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
+                </svg>
+            </div>
+            
+            <div id="cityDropdown" class="dropdown">
+                <!-- City options will be populated here via JavaScript -->
+            </div>
+        </div>
+        
+        <div id="searchResults" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Results will be displayed here -->
+        </div>
+        
+        <div id="noResults" class="text-center py-8 hidden">
+            <p class="text-lg text-gray-600">No results found for "<span id="searchTermDisplay"></span>"</p>
+        </div>
+    </div>
+
+    <script>
+        // The data from your data.js file
+        const sampleListings = <%- JSON.stringify(listings) %>;
+        
+        // Extract unique cities
+        const allCities = [...new Set(sampleListings.map(listing => listing.location))].sort();
+        
+        const citySearchInput = document.getElementById('citySearch');
+        const cityDropdown = document.getElementById('cityDropdown');
+        const searchResults = document.getElementById('searchResults');
+        const noResults = document.getElementById('noResults');
+        const searchTermDisplay = document.getElementById('searchTermDisplay');
+        
+        // Function to populate and show dropdown
+        function showDropdown(cities) {
+            cityDropdown.innerHTML = '';
+            cities.forEach(city => {
+                const item = document.createElement('div');
+                item.className = 'dropdown-item';
+                item.textContent = city;
+                item.addEventListener('click', () => {
+                    citySearchInput.value = city;
+                    cityDropdown.classList.remove('show');
+                    displayResults(city);
+                });
+                cityDropdown.appendChild(item);
+            });
+            
+            if (cities.length > 0) {
+                cityDropdown.classList.add('show');
+            } else {
+                cityDropdown.classList.remove('show');
+            }
+        }
+        
+        // Function to display search results
+        function displayResults(city) {
+            const filteredListings = sampleListings.filter(listing => 
+                listing.location.toLowerCase() === city.toLowerCase()
+            );
+            
+            searchResults.innerHTML = '';
+            
+            if (filteredListings.length > 0) {
+                noResults.classList.add('hidden');
+                
+                filteredListings.forEach(listing => {
+                    const card = document.createElement('div');
+                    card.className = 'bg-white rounded-lg overflow-hidden shadow-md';
+                    card.innerHTML = `
+                        <div class="h-48 bg-gray-200">
+                            <img src="${listing.image.url}" alt="${listing.title}" class="w-full h-full object-cover">
+                        </div>
+                        <div class="p-4">
+                            <h3 class="font-semibold text-lg">${listing.title}</h3>
+                            <p class="text-gray-600 mb-2">${listing.location}, ${listing.country}</p>
+                            <p class="font-medium">$${listing.price} / night</p>
+                        </div>
+                    `;
+                    searchResults.appendChild(card);
+                });
+            } else {
+                noResults.classList.remove('hidden');
+                searchTermDisplay.textContent = city;
+            }
+        }
+        
+        // Event listener for search input
+        citySearchInput.addEventListener('input', () => {
+            const searchTerm = citySearchInput.value.toLowerCase();
+            
+            if (searchTerm.length > 0) {
+                const filteredCities = allCities.filter(city => 
+                    city.toLowerCase().includes(searchTerm)
+                );
+                showDropdown(filteredCities);
+            } else {
+                cityDropdown.classList.remove('show');
+                searchResults.innerHTML = '';
+                noResults.classList.add('hidden');
+            }
+        });
+        
+        // Handle clicks outside the dropdown
+        document.addEventListener('click', (event) => {
+            if (!citySearchInput.contains(event.target) && !cityDropdown.contains(event.target)) {
+                cityDropdown.classList.remove('show');
+            }
+        });
+        
+        // Focus event to show dropdown again if there's text in the input
+        citySearchInput.addEventListener('focus', () => {
+            if (citySearchInput.value.length > 0) {
+                const searchTerm = citySearchInput.value.toLowerCase();
+                const filteredCities = allCities.filter(city => 
+                    city.toLowerCase().includes(searchTerm)
+                );
+                showDropdown(filteredCities);
+            }
+        });
+    </script>

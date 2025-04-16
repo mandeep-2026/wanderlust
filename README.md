@@ -2,7 +2,7 @@
 
 WanderLust is a full-stack web application inspired by Airbnb, designed for travelers to explore, book, and review accommodations. Built using the **MERN stack** (MongoDB, Express.js, React, Node.js), this platform enables users to browse through various listings, view detailed descriptions, and make reservations for their next vacation. Users can also leave reviews for the places they’ve visited, fostering a community of feedback and recommendations.
 
-🔗 Live Demo: https://wanderlust-lrzt.onrender.com
+🔗 Live Demo:https://wanderlust-lrzt.onrender.com/listings
 
 ---
 
